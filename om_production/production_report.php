@@ -56,7 +56,7 @@ include("include/head.php"); ?>
         <?php include("include/top_nav.php"); ?>
         <div class="row wrapper border-bottom white-bg page-heading">
           <div class="col-lg-12">
-                 <h2>OM Planning</h2>
+                 <h2>OM Production</h2>
                  <ol class="breadcrumb">
                      <li class="breadcrumb-item">
                          <a href="index.php">Home</a>
