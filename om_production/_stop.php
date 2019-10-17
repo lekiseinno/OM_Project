@@ -10,7 +10,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>OM Planning</title>
+	<title>OM Production</title>
 	<meta charset="utf-8">
 	<link href="Assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="Assets/font-awesome/css/font-awesome.css" rel="stylesheet">
