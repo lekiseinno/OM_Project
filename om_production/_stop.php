@@ -27,6 +27,7 @@
 	
 </head>
 <body style="font-size: 50px;font-weight: bold;background-color: #2f4050" onload="prod_order_no.focus()">
+    
 	<div class="container" align="center" ><br>
 		<div class="main">
             <input type="hidden" name="machine_id" value="<?php echo $machine_id ?>" id="machine_id">
