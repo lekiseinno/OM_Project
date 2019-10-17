@@ -231,8 +231,8 @@ $connect_signin	=	$srvsql->connect_signin();
 
 
 
-$goto_planning		=	array("10600211");
-$goto_production	=	array("10600114");
+$goto_planning		=	array("10600211","14450001","13500007","14600006");
+$goto_production	=	array("10600114","13590228","14610010","13590228","14620034","14380001");
 
 
 
