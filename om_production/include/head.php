@@ -28,4 +28,10 @@
     	position: relative;
 	}
 </style>
+	<?php
+	if(!isset($_SESSION['emp_code']))
+	{
+		echo "<script>window.location.href='../om_auth/login_plan_pd.php'</script>";
+	}
+	?>
 </head>
