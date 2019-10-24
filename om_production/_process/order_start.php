@@ -1,6 +1,8 @@
 
 <?php
+        session_start();
 		require_once 'connect.php';
+        $username_start = $_SESSION['username_start'];
         $machine_id = trim($_POST['machine_id']);
 		$prod_order_no = trim($_POST['prod_order_no']);
 		$order_start_time = date('Y-m-d H:i:s');
@@ -14,7 +16,7 @@
 
     	if($rs['count_order']==0){	
 
-    		$sql = "INSERT INTO orderStartStopTime(prod_order_no,order_start_time,machine_id) VALUES('$prod_order_no','$order_start_time','$machine_id')";
+    		$sql = "INSERT INTO orderStartStopTime(prod_order_no,order_start_time,machine_id,username_start) VALUES('$prod_order_no','$order_start_time','$machine_id','$username_start')";
     		$query = sqlsrv_query($connect, $sql) or die($sql);
 
     		if($query)echo 1;

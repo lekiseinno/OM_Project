@@ -1,6 +1,15 @@
 <?php 
-    require_once '_process/connect.php';
+    session_start();
     $machine_id = $_GET['machine_id'];
+    if(isset($_SESSION['machine_id_start'])){
+        if($_SESSION['machine_id_start']!=$machine_id){
+            header("location:_login_start.php?machine_id=$machine_id");
+        }
+    }else{
+        header("location:_login_start.php?machine_id=$machine_id");
+    }
+    require_once '_process/connect.php';
+    
     $sql_time = "SELECT * FROM machine WHERE  id = '$machine_id'";
     $query_time = sqlsrv_query($connect, $sql_time) or die($sql_time);
     $row = sqlsrv_fetch_array($query_time,SQLSRV_FETCH_ASSOC);
@@ -28,6 +37,7 @@
     <style type="text/css">.display_none{display: none}</style>
 </head>
 <body style="font-size: 50px;font-weight: bold;background-color: #2f4050" onload="prod_order_no.focus()">
+
 	<div class="container" align="center" ><br>
 		<div class="main">
             <input type="hidden" name="machine_id" value="<?php echo $machine_id ?>" id="machine_id">

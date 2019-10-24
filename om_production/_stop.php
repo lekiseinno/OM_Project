@@ -1,6 +1,17 @@
 <?php 
-    require_once '_process/connect.php';
+    session_start();
     $machine_id = $_GET['machine_id'];
+    if(isset($_SESSION['machine_id_stop'])){
+        if($_SESSION['machine_id_stop']!=$machine_id){
+            header("location:_login_stop.php?machine_id=$machine_id");
+        }
+    }else{
+        header("location:_login_stop.php?machine_id=$machine_id");
+    }
+
+    require_once '_process/connect.php';
+    
+
     $sql_time = "SELECT * FROM machine WHERE  id = '$machine_id'";
     $query_time = sqlsrv_query($connect, $sql_time) or die($sql_time);
     $row = sqlsrv_fetch_array($query_time,SQLSRV_FETCH_ASSOC);
@@ -27,11 +38,13 @@
 	
 </head>
 <body style="font-size: 50px;font-weight: bold;background-color: #2f4050" onload="prod_order_no.focus()">
+
+
     
 	<div class="container" align="center" ><br>
 		<div class="main">
             <input type="hidden" name="machine_id" value="<?php echo $machine_id ?>" id="machine_id">
-			<div style="color: white">ORDER STOP : <?php echo $machine_name ?></div>
+			<div style="color: #ff8080">ORDER STOP : <?php echo $machine_name ?></div>
 			<input type="text" name="prod_order_no" class="form-control" style="font-size: 50px;margin-bottom: 10px" id="prod_order_no" >
 			<button type="button" class="btn btn-lg btn-primary order_stop" style="display: none">STOP</button>
 		</div>
