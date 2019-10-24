@@ -25,10 +25,9 @@
 		$myJSON='';
 	}
 
-   
-	echo $myJSON;
- 	
 
+	echo $myJSON;
+ 
 
 
  ?>

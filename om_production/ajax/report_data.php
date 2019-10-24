@@ -1,7 +1,7 @@
 <?php
             error_reporting(0);
-            $date_search =  date("Y-d-m", strtotime($_POST["date_plan"]));
-            // echo $date_search;
+            $date_search=explode('/', $_POST["date_plan"]);
+            $date_search = $date_search[2].'-'.$date_search[1].'-'.$date_search[0];
             include("../include/function.php");
             include("../class/connect.php");
             $class_con_125 = new Sqlsrv();
@@ -9,8 +9,8 @@
             // Select
             $query=$class_con_125->getQuery("
                 SELECT pl.id AS pl_id,pl.prod_order_no AS Pl_prod_order_no,pl.*,ot.* 
-                FROM planning AS pl LEFT JOIN orderStartStopTime AS ot ON pl.prod_order_no=ot.prod_order_no
-                LEFT JOIN machine AS ma ON ot.machine_id=ma.id
+                FROM planning AS pl LEFT OUTER JOIN orderStartStopTime AS ot ON pl.prod_order_no=ot.prod_order_no
+                LEFT JOIN machine AS ma ON pl.machine_id=ma.id
                 WHERE ma.machine_name = '".$_POST["machine"]."' 
                 AND pl.plan_date = '".$date_search."'
             ");
@@ -143,7 +143,7 @@
             'PDR1906-0346',
             'PDR1906-0416',
             'PDW1905-0093');
-            foreach ($test_data as $row => $value) {
+            foreach ($prod_order_no as $row => $value) {
             $query=$class_con_om->getQuery("
                 EXEC [dbo].[OM_Quantity] @PDR = '".$value."'
             ");
@@ -174,7 +174,7 @@
 </div>
 <?php }else{ ?>
 <div class="wrapper wrapper-content animated fadeInRight">
-        	<div class="row">
+            <div class="row">
                 <div class="col-lg-4">
                 <div class="panel panel-info">
                     <div class="panel-heading">
@@ -581,49 +581,49 @@
 
                         <div class="table-responsive">
                   
-                    	<div class="overflow">
-                    	<table border="1" class="table table-striped table-bordered table-hover dataTables-example" style="width: 140%;">
-                    		<thead>
-                    			<tr bgcolor="LimeGreen">
-                    				<th>ลำดับ</th>
-                    				<th>PDR</th>
-                    				<th>ชื่อลูกค้า</th>
-                    				<th>ชื่อกล่อง</th>
-                    				<th>เวลาแผน(นาที)</th>
-                    				<th>เวลาเดินจริง(นาที)</th>
-                    				<th>เลทแผน(นาที)</th> 
+                        <div class="overflow">
+                        <table border="1" class="table table-striped table-bordered table-hover dataTables-example" style="width: 140%;">
+                            <thead>
+                                <tr bgcolor="LimeGreen">
+                                    <th>ลำดับ</th>
+                                    <th>PDR</th>
+                                    <th>ชื่อลูกค้า</th>
+                                    <th>ชื่อกล่อง</th>
+                                    <th>เวลาแผน(นาที)</th>
+                                    <th>เวลาเดินจริง(นาที)</th>
+                                    <th>เลทแผน(นาที)</th> 
                                     <th>เวลาสูญเสียรวม</th>
-                    				<th>Set up Time ตามแผน(นาที)</th>
-                    				<th>Set up Time เดินงานจริง(นาที)</th>
+                                    <th>Set up Time ตามแผน(นาที)</th>
+                                    <th>Set up Time เดินงานจริง(นาที)</th>
 
                                     <th>เวลาเริ่มยิงบาร์โค้ด</th>
                                     <th>เวลาหยุดยิงบาร์โค้ด</th>
                                     <th>เวลา เอาต์พุต</th>
                                     <th>สถานะ</th>
 
-                    				<th>จำนวนต้องการ</th>
-                    				<th>จำนวนที่กระดาษเข้า(PO+VA)</th>
-                    				<th>input(แผ่น)</th>
-                    				<th>output(แผ่น)</th>
-                    				<th>ของเสีย(แผ่น)</th>
-                    			</tr>
-                    		</thead>
-                    		<tbody>
-                    			<?php 
-                    				$i=1;
-                    				foreach ($prod_order_no as $row => $id) {
-                    			?>
-                    			<tr>
-                    				<td><?php echo $i ?></td>
-                    				<td width="7%;"><?php echo $id ?></td>
-                    				<td><?php echo $customer_name[$row] ?></td>
-                    				<td><?php echo $description[$row] ?></td>
-                    				<td><?php echo round($production_minutes[$row]) ?></td>
-                    				<td><?php echo round($real_time[$row]) ?></td>
+                                    <th>จำนวนต้องการ</th>
+                                    <th>จำนวนที่กระดาษเข้า(PO+VA)</th>
+                                    <th>input(แผ่น)</th>
+                                    <th>output(แผ่น)</th>
+                                    <th>ของเสีย(แผ่น)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php 
+                                    $i=1;
+                                    foreach ($prod_order_no as $row => $id) {
+                                ?>
+                                <tr>
+                                    <td><?php echo $i ?></td>
+                                    <td width="7%;"><?php echo $id ?></td>
+                                    <td><?php echo $customer_name[$row] ?></td>
+                                    <td><?php echo $description[$row] ?></td>
+                                    <td><?php echo round($production_minutes[$row]) ?></td>
+                                    <td><?php echo round($real_time[$row]) ?></td>
                                     <td><?php echo $late_time[$row] ?></td>
                                     <td><?php echo $losstime_sum[$row]; ?> </td>
-                    				<td><?php echo $change_order_time[$row]; ?></td>
-                    				<td><?php echo $time_set_real[$row]; ?></td>
+                                    <td><?php echo $change_order_time[$row]; ?></td>
+                                    <td><?php echo $time_set_real[$row]; ?></td>
 
                                     <td><?php echo $order_start_time[$row]; ?></td>
                                     <td><?php echo $order_end_time[$row]; ?></td>
@@ -638,31 +638,31 @@
                                         }
                                     ?>
                                     <td><?php echo $status; ?></td>
-                    				<td><?php echo round($Quantity[$row]) ?></td>
-                    				<td><?php echo $paper_in[$row] ?></td>
-                    				<td><?php echo round(trim($input[$row],"-")) ?></td>
-                    				<td><?php echo round($Output[$row]) ?></td>
-                    				<td><?php echo round(trim($waste_paper[$row],"-")) ?></td>
-                    			</tr>
-                    			<?php $i++;} ?>
-                    			<tr style="font-weight: bold;">
-                    				<td colspan="4"></td>
-                    				<td><?php echo round(trim(array_sum($production_minutes),"-")); ?></td>
-                    				<td><?php echo round(trim(array_sum($real_time),"-")); ?></td>
-                    				<td><?php echo array_sum($late_time); ?></td>
-                    				<td><?php echo array_sum($losstime_sum); ?></td>
-                    				<td><?php echo array_sum($change_order_time); ?></td>
-                    				<td><?php echo array_sum($time_set_real); ?></td>
+                                    <td><?php echo round($Quantity[$row]) ?></td>
+                                    <td><?php echo $paper_in[$row] ?></td>
+                                    <td><?php echo round(trim($input[$row],"-")) ?></td>
+                                    <td><?php echo round($Output[$row]) ?></td>
+                                    <td><?php echo round(trim($waste_paper[$row],"-")) ?></td>
+                                </tr>
+                                <?php $i++;} ?>
+                                <tr style="font-weight: bold;">
                                     <td colspan="4"></td>
-                    				<td><?php echo array_sum($Quantity); ?></td>
-                    				<td></td>
-                    				<td><?php echo round(trim(array_sum($input),"-")); ?></td>
-                    				<td><?php echo array_sum($Output); ?></td>
-                    				<td><?php echo round(trim(array_sum($waste_paper),"-")); ?></td>
-                    			</tr>
-                    		</tbody>
+                                    <td><?php echo round(trim(array_sum($production_minutes),"-")); ?></td>
+                                    <td><?php echo round(trim(array_sum($real_time),"-")); ?></td>
+                                    <td><?php echo array_sum($late_time); ?></td>
+                                    <td><?php echo array_sum($losstime_sum); ?></td>
+                                    <td><?php echo array_sum($change_order_time); ?></td>
+                                    <td><?php echo array_sum($time_set_real); ?></td>
+                                    <td colspan="4"></td>
+                                    <td><?php echo array_sum($Quantity); ?></td>
+                                    <td></td>
+                                    <td><?php echo round(trim(array_sum($input),"-")); ?></td>
+                                    <td><?php echo array_sum($Output); ?></td>
+                                    <td><?php echo round(trim(array_sum($waste_paper),"-")); ?></td>
+                                </tr>
+                            </tbody>
                         </table>
-                            	           </div>
+                                           </div>
                                         </div>
 
                                     </div>
@@ -788,7 +788,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php $i=1; foreach ($test_data as $key => $id) {?>
+                                            <?php $i=1; foreach ($prod_order_no as $key => $id) {?>
                                             <tr>
                                                 <td><?php echo $i ?></td>
                                                 <td><?php echo $id ?></td>
@@ -850,7 +850,7 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <?php $i=1; foreach ($test_data as $key => $value) {?>
+                                                    <?php $i=1; foreach ($prod_order_no as $key => $value) {?>
                                                     <tr>
                                                         <td><?php echo $i ?></td>
                                                         <td><?php echo $value ?></td>

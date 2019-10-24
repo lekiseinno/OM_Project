@@ -26,7 +26,7 @@ if ( $xlsx = SimpleXLSX::parse('../_file.xlsx')) {
 	#echo '<h2>'.$xlsx->sheetName(0).'</h2>';
 	echo '<table border=1>';
 
-	$sql = "DELETE FROM [dbo].[planning] WHERE plan_date '$plan_date' AND machine_id = '$plan_date'";
+	$sql = "DELETE FROM [dbo].[planning] WHERE plan_date = '$plan_date' AND machine_id = '$machine_id'";
 
 	$query = sqlsrv_query( $connect, $sql ) or die($sql);
 

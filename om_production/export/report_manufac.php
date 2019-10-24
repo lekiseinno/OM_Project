@@ -1,8 +1,10 @@
 <?php 
 error_reporting(0);
 $machine = $_POST["machine"];
-$date_plan = $_POST["date_plan"];
-$format_date = date("Y-d-m", strtotime($date_plan));
+// $date_plan = $_POST["date_plan"];
+$date_search=explode('/', $_POST["date_plan"]);
+$format_date = $date_search[2].'-'.$date_search[1].'-'.$date_search[0];
+// $format_date = date("Y-d-m", strtotime($date_plan));
 $report_manufacturing = "Report Machine: "."(".$machine.")".":"." Date: "."(".$format_date.")";
 
 header("Content-Type: application/vnd.ms-excel"); // ประเภทของไฟล์
@@ -21,8 +23,9 @@ include("../class/connect.php");
             // Select
             $query=$class_con_125->getQuery("
                 SELECT pl.id AS pl_id,pl.prod_order_no AS Pl_prod_order_no,pl.*,ot.* 
-                FROM planning AS pl LEFT JOIN orderStartStopTime AS ot ON pl.prod_order_no=ot.prod_order_no
-                WHERE pl.machine = '".$machine."' AND pl.plan_date = '".$format_date."'
+                FROM planning AS pl LEFT OUTER JOIN orderStartStopTime AS ot ON pl.prod_order_no=ot.prod_order_no
+                LEFT JOIN machine AS ma ON pl.machine_id=ma.id
+                WHERE ma.machine_name = '".$machine."' AND pl.plan_date = '".$format_date."'
             ");
             while($result=$class_con_125->getResult($query)){
                 $pl_id[] = $result["pl_id"];
@@ -162,7 +165,7 @@ include("../class/connect.php");
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 <link href='https://fonts.googleapis.com/css?family=Kanit:400,300&subset=thai,latin' rel='stylesheet' type='text/css'>
 <style type="text/css">
-	body {
+    body {
           font-family: 'Kanit', sans-serif;
     }
     h1 {
@@ -172,11 +175,11 @@ include("../class/connect.php");
 </head>
 <body>
 <table border="1">
-		<thead>
-			<tr align="center" style="background-color: #191970;">
-				<th colspan="24" style="color: #FFFFFF;font-size: 18px;">รายงานการผลิตเครื่อง <?php echo $machine." | ".$format_date  ?></th>
-			</tr>
-			<tr>
+        <thead>
+            <tr align="center" style="background-color: #191970;">
+                <th colspan="24" style="color: #FFFFFF;font-size: 18px;">รายงานการผลิตเครื่อง <?php echo $machine." | ".$format_date  ?></th>
+            </tr>
+            <tr>
         <th>ลำดับ</th>
         <th>PDR</th>
         <th>ชื่อลูกค้า</th>
@@ -203,13 +206,13 @@ include("../class/connect.php");
         <th>output(แผ่น)</th>
         <th>ของเสีย(แผ่น)</th>
       </tr>
-		</thead>
-		<tbody>
-			<?php 
-				$i=1;
-				foreach ($prod_order_no as $row => $id) {
-			?>
-			<tr>
+        </thead>
+        <tbody>
+            <?php 
+                $i=1;
+                foreach ($prod_order_no as $row => $id) {
+            ?>
+            <tr>
         <td><?php echo $i ?></td>
         <td><?php echo $id ?></td>
         <td><?php echo $customer_name[$row] ?></td>
@@ -269,8 +272,8 @@ include("../class/connect.php");
         <td><?php echo round($Output[$row]) ?></td>
         <td><?php echo round(trim($waste_paper[$row],"-")) ?></td>
       </tr>
-			<?php $i++;} ?>
-			<tr>
+            <?php $i++;} ?>
+            <tr>
         <td colspan="4"></td>
         <!-- <td><?php echo round(trim(array_sum($production_minutes),"-")); ?></td> -->
         <td><?php echo round(trim(array_sum($production_minutes),"-")); ?></td>
@@ -297,10 +300,10 @@ include("../class/connect.php");
         <td colspan="2">เปอร์เซ็นต์ของเสีย</td>
         <td><?php echo sprintf("%.4f%%", trim(array_sum($waste_paper),"-")/trim(array_sum($input),"-")); ?></td>
       </tr>
-		</tbody>
-	</table><br><br>
-	<table border="1">
-	 <tr align="center" style="background-color: #00FF00;"><th colspan="5">รายงานการผลิตประจำวันที่ <?php echo $format_date; ?></th></tr>	
+        </tbody>
+    </table><br><br>
+    <table border="1">
+     <tr align="center" style="background-color: #00FF00;"><th colspan="5">รายงานการผลิตประจำวันที่ <?php echo $format_date; ?></th></tr>   
      <tr align="center" style="background-color: #D3D3D3;"><th>จำนวน ORDER ทั้งหมด</th><th>จำนวน ORDER ที่ผลิตได้</th><th>รวมเวลาตามแผนการผลิต (นาที)</th><th>เวลาที่ใช้จริง(นาที)</th><th>เวลาเลทแผน(นาที)</th></tr>
      <tr align="center"><td><?php echo count($prod_order_no); ?></td><td><?php echo count($PDR); ?></td><td><?php echo round(array_sum($production_minutes)); ?></td><td><?php echo round(array_sum($real_time)); ?></td><td><?php echo array_sum($late_time); ?></td></tr>
      <tr align="center" style="background-color: #D3D3D3;"><th>PDRที่พบปัญหาคุณภาพ</th><th>ชื่อลูกค้า</th><th>ชื่อกล่อง</th><th>จำนวนต่อOrder</th><th>จำนวนที่พบปัญหา</th></tr>
@@ -310,9 +313,9 @@ include("../class/connect.php");
     </table><br><br>
 
     <table width="100%">
-    	<tr>
-    		<td>
-	<table border="1" width="100%">
+        <tr>
+            <td>
+    <table border="1" width="100%">
       <tr><th width="50%">INPUT (แผ่น)</th><td align="right"><?php echo trim(array_sum($input),"-"); ?></td></tr>
       <tr><th width="50%">OUTPUT (แผ่น)</th><td align="right"><?php echo array_sum($Output); ?></td></tr>
       <tr><th width="50%">ของเสีย (แผ่น)</th><td align="right"><?php echo trim(array_sum($waste_paper),"-"); ?></td></tr>
@@ -339,7 +342,7 @@ include("../class/connect.php");
     <table border="1" width="50%">
      <thead align="center">
       <tr align="left">
-      	<th colspan="7"><u>งานขาดจำนวน</u></th>
+        <th colspan="7"><u>งานขาดจำนวน</u></th>
       </tr>
       <tr>
        <th>เลขที่ PDR</th>
@@ -399,119 +402,119 @@ include("../class/connect.php");
     <?php $sum_time_machine = $sum_hour-$sum_time; ?>
     <?php $sum_late_time = array_sum($production_time_late)+array_sum($losstime_paper)+array_sum($losstime_block)+array_sum($losstime_color)+array_sum($losstime_machine)+array_sum($losstime_other); ?>
     <?php $sum_late_time_machine = $sum_time_machine-$sum_late_time; ?>
-	<?php $availability = sprintf("%.2f%%", $sum_late_time_machine * 100/$sum_time_machine) ?>
-	<?php $num_paper_machine = $sum_late_time_machine*$num_paper_for_day ?>
-	<?php $availability = sprintf("%.2f%%", $sum_late_time_machine * 100/$sum_time_machine) ?>
-	<?php $performance = sprintf("%.2f%%", trim(array_sum($input),"-") * 100/$num_paper_machine) ?>
-	<?php $quality_rate = sprintf("%.2f%%", array_sum($Output) * 100/trim(array_sum($input),"-")) ?>
-	<table border="0">
-		<tr align="center" style="background-color: #32CD32;">
-			<th colspan="4">OEE (OVERALL EQUIPMENT EFFECTIVENESS)ของเครื่อง <?php echo $machine." | ".$format_date  ?></th>
-		</tr>
-		<tr>
-			<th colspan="2" style="background-color: #FFFF00;">1. Availability (อัตราการเดินเครื่อง)</th>
-			<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
-			<th colspan="1" style="background-color: #FFFF00;">2. Performance Efficiency (ประสิทธิภาพการเดินเครื่อง)</th>
-	    </tr>
-	    <tr>
-	    	<td></td>
-	    	<td><?php echo $num_hour ?> ชม X 60  นาที  <?php echo $sum_hour; ?> นาที</td>
-	    	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-	    	<td>Performance Rate (เวลาที่เครื่องเดินงาน) = <?php echo $sum_late_time_machine ?> นาที</td>
-	    </tr>
-	    <tr>
-	    	<td></td>
-	    	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-	    	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-	    	<td>เครื่อง <?php echo $machine ?> เดินงาน 1 นาที เท่ากับ <?php echo $num_paper_for_day  ?> แผ่น = <?php echo $num_paper_machine ?> แผ่น</td>
-	    </tr>
-	    <tr>
-	    	<td></td>
-	    	<td>Meal break (หักกินข้าว) <?php echo $meal_break ?> นาที</td>
-	    	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-	    	<td>ดังนั้น งานที่ผ่านเครื่อง (ของดี+ของเสีย) <?php echo trim(array_sum($input),"-"); ?> แผ่น</td>
-	    </tr>
-	    <tr>
-	    	<td></td>
-	    	<td>Meeting <?php echo $meeting ?> นาที</td>
-	    	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-	    	<th>Performance <?php echo $performance ?></th>
-	    </tr>
-	    <tr>
-	    	<td>PLAN DOWN TIME</td>
-	    	<td>การทำ 5 ส <?php echo $five_s ?> นาที</td>
-	    	<td></td>
-	    	<td></td>
-	    </tr>
-	    <tr>
-	    	<td></td>
-	    	<td>การตั้งเครื่อง SET UP <?php echo array_sum($time_set_real) ?> นาที</td>
-	    	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-	    	<th style="background-color: #FFFF00;">3. Quality Rate (อัตราคุณภาพ)</th>
-	    </tr>
-	    <tr>
-	    	<td></td>
-	    	<th>รวม <?php echo $sum_time; ?> นาที</th>
-	    	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-	    	<td>INPUT (ของดี+ของเสีย) <?php echo trim(array_sum($input),"-"); ?> แผ่น</td>
-	    </tr>
-	    <tr>
-	    	<td></td>
-	    	<th>เวลาในการใช้เครื่องจักร <?php echo $sum_time_machine ?> นาที</th>
-	    	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-	    	<td>OUTPUT (ของดี) <?php echo array_sum($Output); ?> แผ่น</td>
-	    </tr>
-	    <tr>
-	    	<td>&nbsp;</td>
-	    	<td>&nbsp;</td>
-	    	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-	    	<th>Quality Rate <?php echo $quality_rate ?></th>
-	    </tr>
-	    <tr>
-	    	<td></td>
-	    	<td>ผลิตเลท <?php echo array_sum($production_time_late) ?> นาที</td>
-	    	<td>&nbsp;</td>
-	    	<th>&nbsp;</th>
-	    </tr>
-	    <tr>
-	    	<td></td>
-	    	<td>เวลาสูญเสียกระดาษ <?php echo array_sum($losstime_paper) ?> นาที</td>
-	    	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-	    	<td>OEE = อัตราการเดินเครื่อง * ประสิทธิภาพการเดินเครื่อง * อัตราคุณภาพ</td>
-	    </tr>
-	    <tr>
-	    	<td></td>
-	    	<td>เวลาสูญเสียบล็อค <?php echo array_sum($losstime_block) ?> นาที</td>
-	    	<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-	    	<th style="background-color: #FFE4E1;">OEE = <?php echo sprintf("%.2f%%", (($sum_late_time_machine * 100/$sum_time_machine)/100*(trim(array_sum($input),"-") * 100/$num_paper_machine)/100*(array_sum($Output) * 100/trim(array_sum($input),"-"))/100)*100) ?></th>
-	    </tr>
-	    <tr>
-	    	<td></td>
-	    	<td>เวลาสูญเสียสี <?php echo array_sum($losstime_color) ?> นาที</td>
-	    </tr>
-	    <tr>
-	    	<td align="center">เวลาสูญเสีย(UNPLAN)</td>
-	    	<td>เวลาสูญเสียเครื่องจักร <?php echo array_sum($losstime_machine) ?> นาที</td>
-	    </tr>
-	    <tr>
-	    	<td></td>
-	    	<td>เวลาสูญเสียอื่น <?php echo array_sum($losstime_other) ?> นาที</td>
-	    </tr>
-	    <tr>
-	    	<td></td>
-	    	<th>รวม <?php echo $sum_late_time;?> นาที</th>
-	    </tr>
-	    <tr>
-	    	<td></td>
-	    	<th>เวลาใช้เครื่องจักร-เวลาสูญเสีย <?php echo $sum_late_time_machine ?> นาที</th>
-	    </tr>
-	    <tr>
-	    	<td></td>
-	    	<th>Availability <?php echo $availability ?></th>
-	    </tr>
-	</table>
-		</td>
-	</tr>
+    <?php $availability = sprintf("%.2f%%", $sum_late_time_machine * 100/$sum_time_machine) ?>
+    <?php $num_paper_machine = $sum_late_time_machine*$num_paper_for_day ?>
+    <?php $availability = sprintf("%.2f%%", $sum_late_time_machine * 100/$sum_time_machine) ?>
+    <?php $performance = sprintf("%.2f%%", trim(array_sum($input),"-") * 100/$num_paper_machine) ?>
+    <?php $quality_rate = sprintf("%.2f%%", array_sum($Output) * 100/trim(array_sum($input),"-")) ?>
+    <table border="0">
+        <tr align="center" style="background-color: #32CD32;">
+            <th colspan="4">OEE (OVERALL EQUIPMENT EFFECTIVENESS)ของเครื่อง <?php echo $machine." | ".$format_date  ?></th>
+        </tr>
+        <tr>
+            <th colspan="2" style="background-color: #FFFF00;">1. Availability (อัตราการเดินเครื่อง)</th>
+            <th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+            <th colspan="1" style="background-color: #FFFF00;">2. Performance Efficiency (ประสิทธิภาพการเดินเครื่อง)</th>
+        </tr>
+        <tr>
+            <td></td>
+            <td><?php echo $num_hour ?> ชม X 60  นาที  <?php echo $sum_hour; ?> นาที</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>Performance Rate (เวลาที่เครื่องเดินงาน) = <?php echo $sum_late_time_machine ?> นาที</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>เครื่อง <?php echo $machine ?> เดินงาน 1 นาที เท่ากับ <?php echo $num_paper_for_day  ?> แผ่น = <?php echo $num_paper_machine ?> แผ่น</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>Meal break (หักกินข้าว) <?php echo $meal_break ?> นาที</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>ดังนั้น งานที่ผ่านเครื่อง (ของดี+ของเสีย) <?php echo trim(array_sum($input),"-"); ?> แผ่น</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>Meeting <?php echo $meeting ?> นาที</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <th>Performance <?php echo $performance ?></th>
+        </tr>
+        <tr>
+            <td>PLAN DOWN TIME</td>
+            <td>การทำ 5 ส <?php echo $five_s ?> นาที</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>การตั้งเครื่อง SET UP <?php echo array_sum($time_set_real) ?> นาที</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <th style="background-color: #FFFF00;">3. Quality Rate (อัตราคุณภาพ)</th>
+        </tr>
+        <tr>
+            <td></td>
+            <th>รวม <?php echo $sum_time; ?> นาที</th>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>INPUT (ของดี+ของเสีย) <?php echo trim(array_sum($input),"-"); ?> แผ่น</td>
+        </tr>
+        <tr>
+            <td></td>
+            <th>เวลาในการใช้เครื่องจักร <?php echo $sum_time_machine ?> นาที</th>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>OUTPUT (ของดี) <?php echo array_sum($Output); ?> แผ่น</td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <th>Quality Rate <?php echo $quality_rate ?></th>
+        </tr>
+        <tr>
+            <td></td>
+            <td>ผลิตเลท <?php echo array_sum($production_time_late) ?> นาที</td>
+            <td>&nbsp;</td>
+            <th>&nbsp;</th>
+        </tr>
+        <tr>
+            <td></td>
+            <td>เวลาสูญเสียกระดาษ <?php echo array_sum($losstime_paper) ?> นาที</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <td>OEE = อัตราการเดินเครื่อง * ประสิทธิภาพการเดินเครื่อง * อัตราคุณภาพ</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>เวลาสูญเสียบล็อค <?php echo array_sum($losstime_block) ?> นาที</td>
+            <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+            <th style="background-color: #FFE4E1;">OEE = <?php echo sprintf("%.2f%%", (($sum_late_time_machine * 100/$sum_time_machine)/100*(trim(array_sum($input),"-") * 100/$num_paper_machine)/100*(array_sum($Output) * 100/trim(array_sum($input),"-"))/100)*100) ?></th>
+        </tr>
+        <tr>
+            <td></td>
+            <td>เวลาสูญเสียสี <?php echo array_sum($losstime_color) ?> นาที</td>
+        </tr>
+        <tr>
+            <td align="center">เวลาสูญเสีย(UNPLAN)</td>
+            <td>เวลาสูญเสียเครื่องจักร <?php echo array_sum($losstime_machine) ?> นาที</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>เวลาสูญเสียอื่น <?php echo array_sum($losstime_other) ?> นาที</td>
+        </tr>
+        <tr>
+            <td></td>
+            <th>รวม <?php echo $sum_late_time;?> นาที</th>
+        </tr>
+        <tr>
+            <td></td>
+            <th>เวลาใช้เครื่องจักร-เวลาสูญเสีย <?php echo $sum_late_time_machine ?> นาที</th>
+        </tr>
+        <tr>
+            <td></td>
+            <th>Availability <?php echo $availability ?></th>
+        </tr>
+    </table>
+        </td>
+    </tr>
 </table>
 </body>
 </html>
