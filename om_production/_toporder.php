@@ -26,7 +26,7 @@
 					machine_id = '$machine_id'
 			)
 			ORDER BY
-				planning.id DESC";
+				CAST(planning.production_time AS FLOAT) ";
 
 	}else{
 		$sql = "SELECT

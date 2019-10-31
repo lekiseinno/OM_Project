@@ -1,19 +1,8 @@
 <?php
-session_start();
-date_default_timezone_set('Asia/Bangkok');
+	session_start();
+	date_default_timezone_set('Asia/Bangkok');
 
-include_once 'srvsql.php';
-
-$srvsql			=	new	srvsql();
-$connect_signin	=	$srvsql->connect_signin();
-$connect_local	=	$srvsql->connect_local();
-
-
-function save_log($username,$app,$action)
-{
-
-	global $connect_signin;
-
+	include_once 'srvsql.php';
 
 	if(!empty($_SERVER['HTTP_CLIENT_IP']))
 	{
@@ -27,11 +16,13 @@ function save_log($username,$app,$action)
 	{
 		$ips	=	$_SERVER['REMOTE_ADDR'];
 	}
+
 	function getBrowser(){ 
 		$u_agent	=	$_SERVER['HTTP_USER_AGENT']; 
 		$bname		=	'Unknown';
 		$platform	=	'Unknown';
 		$version	=	"";
+
 		if (preg_match('/linux/i', $u_agent)) {
 			$platform = 'Linux';
 		}
@@ -43,41 +34,44 @@ function save_log($username,$app,$action)
 		{
 			$platform = 'Windows';
 		}
+
 		if(preg_match('/MSIE/i',$u_agent)) 
-		{
+		{ 
 			$bname	=	'Internet Explorer'; 
 			$ub		=	"MSIE"; 
-		}
+		} 
 		elseif(preg_match('/Firefox/i',$u_agent)) 
-		{
+		{ 
 			$bname	=	'Mozilla Firefox'; 
 			$ub		=	"Firefox"; 
-		}
+		} 
 		elseif(preg_match('/Chrome/i',$u_agent)) 
-		{
+		{ 
 			$bname	=	'Google Chrome'; 
 			$ub		=	"Chrome"; 
-		}
+		} 
 		elseif(preg_match('/Safari/i',$u_agent)) 
-		{
+		{ 
 			$bname	=	'Apple Safari'; 
 			$ub		=	"Safari"; 
-		}
+		} 
 		elseif(preg_match('/Opera/i',$u_agent)) 
-		{
+		{ 
 			$bname	=	'Opera'; 
 			$ub		=	"Opera"; 
-		}
+		} 
 		elseif(preg_match('/Netscape/i',$u_agent)) 
-		{
+		{ 
 			$bname	=	'Netscape'; 
 			$ub		=	"Netscape"; 
-		}
+		} 
+
 		$known = array('Version', $ub, 'other');
 		$pattern = '#(?<browser>' . join('|', $known) .')[/ ]+(?<version>[0-9.|a-zA-Z.]*)#';
 		if (!preg_match_all($pattern, $u_agent, $matches))
 		{
 		}
+
 		$i	=	count($matches['browser']);
 		if ($i != 1) {
 			if (strripos($u_agent,"Version") < strripos($u_agent,$ub))
@@ -227,56 +221,18 @@ function save_log($username,$app,$action)
 		$devices	=	'Other';
 	}
 
-	$sql_log	=	"
-					INSERT INTO	[LeKise_Group].[dbo].[log_login]	VALUES
-					(
-						'".$_POST['username']."',
-						'".date('Y-m-d')."',
-						'".date('H:i:s')."',
-						'".$ua['platform']."',
-						'".$devices."',
-						'Webapp',
-						'".$ua['name']."',
-						'".$ua['version']."',
-						'".$app."',
-						'".$ips."',
-						'".$action."'
-					);
-					";
-	$query_log		=	sqlsrv_query($connect_signin,$sql_log) or die( 'SQL Error = <hr>'.$sql_log.'<hr><pre>'. print_r( sqlsrv_errors(), true) . '</pre>');
-}
 
-function get_uri($username)
-{
-	global $connect_local;
-	$sql	=	"
-				SELECT		lik.permission_URL_Name,
-							lik.permission_URL,
-							lik.permission_URL_iCon
-				FROM		permission_user		usr
-				INNER JOIN	permission_group	grp	ON	grp.group_Code	=	usr.permission_user_1
-				INNER JOIN	permission_link		lik	ON	(
-														grp.group_Detail	LIKE	CONCAT('%',lik.permission_Code,'%')
-														OR
-														lik.permission_Code	=	usr.permission_user_2
-														)
-				WHERE		usr.emp_code			=	'".$username."'
-				AND			grp.group_Status		=	'Active'
-				AND			lik.permission_Status	=	'Active'
-				";
-	$query		=	sqlsrv_query($connect_local,$sql) or die( 'SQL Error = <hr>'.$sql.'<hr><pre>'. print_r( sqlsrv_errors(), true) . '</pre>');
-	while($row	=	sqlsrv_fetch_array($query))
-	{
-		$_SESSION['uri_name'][]	=	$row['permission_URL_Name'];
-		$_SESSION['uri_icon'][]	=	$row['permission_URL_iCon'];
-		$_SESSION['uri'][]		=	$row['permission_URL'];	
-	}
-}
 
-function set_session($username)
-{
-	//$_SESSION['session_arr'][]	=	
-}
+
+
+$srvsql			=	new	srvsql();
+$connect_signin	=	$srvsql->connect_signin();
+
+
+
+
+$goto_planning		=	array("10600211","14450001","13500007","14600006");
+$goto_production	=	array("10600114","13590228","14610010","13590228","14620034","14380001");
 
 
 
@@ -313,7 +269,23 @@ if(!empty($_POST['username']) and !empty($_POST['password']))
 
 		if($has_manual	==	0)
 		{
-			save_log($_POST['username'],'om_auth','Lost Password');
+			$sql_log	=	"
+							INSERT INTO	[LeKise_Group].[dbo].[log_login]	VALUES
+							(
+								'".$_POST['username']."',
+								'".date('Y-m-d')."',
+								'".date('H:i:s')."',
+								'".$ua['platform']."',
+								'".$devices."',
+								'Webapp',
+								'".$ua['name']."',
+								'".$ua['version']."',
+								'om_auth/login_plan_pd',
+								'".$ips."',
+								'Lost Password'
+							);
+							";
+			$query_log		=	sqlsrv_query($connect_signin,$sql_log) or die( 'SQL Error = <hr>'.$sql_log.'<hr><pre>'. print_r( sqlsrv_errors(), true) . '</pre>');
 			echo "<script>alert('ตรวจสอบ Username หรือ Password');window.history.back();</script>";
 		}
 		else
@@ -331,10 +303,37 @@ if(!empty($_POST['username']) and !empty($_POST['password']))
 			$_SESSION['emp_TName_EN']		=	$row_manual['emp_TName_EN'];
 			$_SESSION['emp_FName_EN']		=	$row_manual['emp_FName_EN'];
 			$_SESSION['emp_LName_EN']		=	$row_manual['emp_LName_EN'];
-			save_log($_POST['username'],'om_auth','Login Success');
-			get_uri($_POST['username']);
-			$redirect	=	"window.location.href='../../omcenter'";
+
+			$sql_log		=	"
+								INSERT INTO	[LeKise_Group].[dbo].[log_login]	VALUES
+								(
+									'".$_POST['username']."',
+									'".date('Y-m-d')."',
+									'".date('H:i:s')."',
+									'".$ua['platform']."',
+									'".$devices."',
+									'Webapp',
+									'".$ua['name']."',
+									'".$ua['version']."',
+									'om_auth/login_plan_pd',
+									'".$ips."',
+									'Login Success'
+								)
+								";
+			$query_log		=	sqlsrv_query($connect_signin,$sql_log)		or die( 'SQL Error = <hr>'.$sql_log.'<hr><pre>'. 	print_r( sqlsrv_errors(), true) . '</pre>');
+			
+			if(in_array($_SESSION['emp_code'], $goto_planning))
+			{
+				$redirect	=	"window.location.href='../../om_planning'";
+			}
+			else
+			if(in_array($_SESSION['emp_code'], $goto_production))
+			{
+				$redirect	=	"window.location.href='../../om_production'";
+			}
 			echo "<script>alert('ยินดีต้อนรับ ".$row['emp_TName_TH']."  ".$row['emp_FName_TH']."  ".$row['emp_LName_TH']." เข้าสู่ระบบ ');".$redirect."</script>";
+
+			echo "<script>alert('ยินดีต้อนรับ ".$row['emp_TName_TH']."  ".$row['emp_FName_TH']."  ".$row['emp_LName_TH']." เข้าสู่ระบบ ');window.location.href='../index.php'</script>";
 		}
 	}
 	else
@@ -352,9 +351,34 @@ if(!empty($_POST['username']) and !empty($_POST['password']))
 		$_SESSION['emp_TName_EN']		=	$row['emp_TName_EN'];
 		$_SESSION['emp_FName_EN']		=	$row['emp_FName_EN'];
 		$_SESSION['emp_LName_EN']		=	$row['emp_LName_EN'];
-		save_log($_POST['username'],'om_auth','Login Success');
-		get_uri($_POST['username']);
-		$redirect	=	"window.location.href='../../omcenter'";
+
+		$sql_log		=	"
+							INSERT INTO	[LeKise_Group].[dbo].[log_login]	VALUES
+							(
+								'".$_POST['username']."',
+								'".date('Y-m-d')."',
+								'".date('H:i:s')."',
+								'".$ua['platform']."',
+								'".$devices."',
+								'Webapp',
+								'".$ua['name']."',
+								'".$ua['version']."',
+								'om_auth/login_plan_pd',
+								'".$ips."',
+								'Login Success'
+							)
+							";
+		$query_log		=	sqlsrv_query($connect_signin,$sql_log)		or die( 'SQL Error = <hr>'.$sql_log.'<hr><pre>'. 	print_r( sqlsrv_errors(), true) . '</pre>');
+		
+		if(in_array($_SESSION['emp_code'], $goto_planning))
+		{
+			$redirect	=	"window.location.href='../../om_planning'";
+		}
+		else
+		if(in_array($_SESSION['emp_code'], $goto_production))
+		{
+			$redirect	=	"window.location.href='../../om_production'";
+		}
 		echo "<script>alert('ยินดีต้อนรับ ".$row['emp_TName_TH']."  ".$row['emp_FName_TH']."  ".$row['emp_LName_TH']." เข้าสู่ระบบ ');".$redirect."</script>";
 	}
 }
