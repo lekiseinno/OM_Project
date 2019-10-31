@@ -25,7 +25,7 @@
 				<ul class="nav nav-second-level collapse">
 					<li><a href="index.php">Index</a></li>
 					<li><a href="_plan_upload.php">Plan Upload</a></li>
-					<li><a href="#">Plan review</a></li>
+					<li><a href="_plan_upload_log.php">Plan review</a></li>
 				</ul>
 			</li>
 		</ul>

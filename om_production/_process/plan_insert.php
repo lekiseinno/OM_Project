@@ -1,7 +1,7 @@
 
 <?php
 
-
+session_start();
 require_once 'connect.php';
 
 require_once '../_lib_excel.php';
@@ -27,6 +27,27 @@ if ( $xlsx = SimpleXLSX::parse('../_file.xlsx')) {
 	echo '<table border=1>';
 
 	$sql = "DELETE FROM [dbo].[planning] WHERE plan_date '$plan_date' AND machine_id = '$plan_date'";
+
+	$query = sqlsrv_query( $connect, $sql ) or die($sql);
+
+
+	foreach ( $xlsx->rows($sheets) as $key => $r ) {
+		$array_pdr[] = $r[3];
+	}
+	$implode_array_pdr = implode("','", $array_pdr);
+
+	$sql = "UPDATE [dbo].[planning] SET status = 0 WHERE prod_order_no IN('$implode_array_pdr') AND machine_id ='$machine_id'";
+
+	$query = sqlsrv_query( $connect, $sql ) or die($sql);
+
+
+	$date_up = date('Y-m-d');
+	$time_up - date('H:i:s');
+	$username = $_SESSION['emp_code'];
+
+	
+
+	$sql = "INSERT INTO dbo.planning_machine_log(plan_date,machine_id,date_up,time_up,username) VALUES('$plan_date','$machine_id','$date_up','$time_up','$username')";
 
 	$query = sqlsrv_query( $connect, $sql ) or die($sql);
 
